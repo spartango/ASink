@@ -12,6 +12,8 @@ import java.util.Queue;
  * 
  */
 public class AsyncOutputWriter implements Runnable {
+	private int sleepTime = 5; // ms
+
 	private Queue<AsyncWriteRequest> sendQueue;
 	private PrintWriter output;
 	private Thread runner;
@@ -84,9 +86,20 @@ public class AsyncOutputWriter implements Runnable {
 		running = true;
 		while (running) {
 			executeSend();
+			pause();
 		}
 
 		cleanup();
+	}
+
+	private void pause() {
+		if (sleepTime > 0) {
+			try {
+				Thread.sleep(sleepTime);
+			} catch (InterruptedException e) {
+				close();
+			}
+		}
 	}
 
 	private void cleanup() {
@@ -104,6 +117,14 @@ public class AsyncOutputWriter implements Runnable {
 
 	public boolean isRunning() {
 		return running;
+	}
+
+	public int getSleepTime() {
+		return sleepTime;
+	}
+
+	public void setSleepTime(int sleepTime) {
+		this.sleepTime = sleepTime;
 	}
 
 }

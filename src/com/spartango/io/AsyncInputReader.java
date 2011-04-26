@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * Provides an asynchronous system for recieving data from a reader as it is
+ * Provides an asynchronous system for receiving data from a reader as it is
  * available. Complete reads and failed reads provide events to listeners with
  * appropriate data, as it becomes available.
  * 
@@ -14,6 +14,8 @@ import java.util.Vector;
  * 
  */
 public class AsyncInputReader implements Runnable {
+	private int sleepTime = 0; // ms
+
 	private List<AsyncReadListener> listeners;
 	private BufferedReader input;
 	private Thread runner;
@@ -41,7 +43,7 @@ public class AsyncInputReader implements Runnable {
 		}
 	}
 
-	private synchronized void executeRecieve() {
+	private synchronized void executeReceive() {
 		try {
 			String data = input.readLine();
 			notifyNewData(data);
@@ -52,14 +54,14 @@ public class AsyncInputReader implements Runnable {
 
 	private void notifyReadFailure(Exception e) {
 		for (AsyncReadListener listener : listeners) {
-			listener.onRecieveFailed(new AsyncReadEvent(this,
+			listener.onReceiveFailed(new AsyncReadEvent(this,
 					AsyncReadEvent.FAILURE, null, e));
 		}
 	}
 
 	private void notifyNewData(String data) {
 		for (AsyncReadListener listener : listeners) {
-			listener.onRecieveFailed(new AsyncReadEvent(this,
+			listener.onReceiveFailed(new AsyncReadEvent(this,
 					AsyncReadEvent.SUCCESS, data, null));
 		}
 	}
@@ -68,10 +70,21 @@ public class AsyncInputReader implements Runnable {
 	public void run() {
 		running = true;
 		while (running) {
-			executeRecieve();
+			executeReceive();
+			pause();
 		}
 
 		cleanup();
+	}
+
+	private void pause() {
+		if (sleepTime > 0) {
+			try {
+				Thread.sleep(sleepTime);
+			} catch (InterruptedException e) {
+				close();
+			}
+		}
 	}
 
 	private void cleanup() {
@@ -86,7 +99,7 @@ public class AsyncInputReader implements Runnable {
 
 	private void notifyInputClosed() {
 		for (AsyncReadListener listener : listeners) {
-			listener.onRecieveFailed(new AsyncReadEvent(this,
+			listener.onReceiveFailed(new AsyncReadEvent(this,
 					AsyncReadEvent.CLOSURE, null, null));
 		}
 	}
@@ -101,6 +114,14 @@ public class AsyncInputReader implements Runnable {
 
 	public synchronized void removeAsyncReadListener(AsyncReadListener listener) {
 		listeners.remove(listener);
+	}
+
+	public int getSleepTime() {
+		return sleepTime;
+	}
+
+	public void setSleepTime(int sleepTime) {
+		this.sleepTime = sleepTime;
 	}
 
 }
