@@ -14,4 +14,17 @@ public class AsyncWriteEvent {
 		this.type = type;
 		this.error = e;
 	}
+
+	public AsyncWriteRequest getRequest() {
+		return request;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public Exception getError() {
+		return error;
+	}
+
 }
