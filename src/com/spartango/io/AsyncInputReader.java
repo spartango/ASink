@@ -29,6 +29,7 @@ public class AsyncInputReader implements Runnable {
 	 * @param bufferedReader
 	 */
 	public AsyncInputReader(BufferedReader bufferedReader) {
+		running = false;
 		listeners = new Vector<AsyncReadListener>();
 		input = bufferedReader;
 		runner = new Thread(this);
@@ -53,16 +54,20 @@ public class AsyncInputReader implements Runnable {
 	}
 
 	private void notifyReadFailure(Exception e) {
+		// Create an immutable event
+		AsyncReadEvent event = new AsyncReadEvent(this, AsyncReadEvent.FAILURE,
+				null, e);
 		for (AsyncReadListener listener : listeners) {
-			listener.onReceiveFailed(new AsyncReadEvent(this,
-					AsyncReadEvent.FAILURE, null, e));
+			listener.onReceiveFailed(event);
 		}
 	}
 
 	private void notifyNewData(String data) {
+		//Create an immutable event 
+		AsyncReadEvent event =  new AsyncReadEvent(this,
+				AsyncReadEvent.SUCCESS, data, null);
 		for (AsyncReadListener listener : listeners) {
-			listener.onReceiveFailed(new AsyncReadEvent(this,
-					AsyncReadEvent.SUCCESS, data, null));
+			listener.onReceiveFailed(event);
 		}
 	}
 

@@ -27,6 +27,7 @@ public class AsyncOutputWriter implements Runnable {
 	 * @param printWriter
 	 */
 	public AsyncOutputWriter(PrintWriter printWriter) {
+		running = false;
 		sendQueue = new LinkedList<AsyncWriteRequest>();
 		output = printWriter;
 		runner = new Thread(this);

@@ -16,7 +16,7 @@ import com.spartango.io.AsyncWriteSender;
 /**
  * Implements an asynchronous socket connected to a host and port, allowing for
  * nonblocking sends and providing notifications on
- * data-receive/send/recieve-failure
+ * data-receive/send/receive-failure
  * 
  * @see AsyncInputReader
  * @see AsyncOutputWriter
@@ -43,14 +43,25 @@ public class AsyncSocket {
 	 */
 	public AsyncSocket(String host, int port) throws UnknownHostException,
 			IOException {
-		running = false;
-		socket = new Socket(host, port);
+		this(new Socket(host, port));
+	}
+
+	/**
+	 * Wraps an existing socket (connected) in asynchronous readers and writers
+	 * NONBLOCKING
+	 * 
+	 * @param source
+	 * @throws IOException
+	 */
+	public AsyncSocket(Socket source) throws IOException {
+		socket = source;
 		reader = new AsyncInputReader(new BufferedReader(new InputStreamReader(
 				socket.getInputStream())));
 		writer = new AsyncOutputWriter(
 				new PrintWriter(socket.getOutputStream()));
-		start();
+		running = false;
 
+		start();
 	}
 
 	/**
@@ -82,26 +93,58 @@ public class AsyncSocket {
 		}
 	}
 
+	/**
+	 * Add a listener to be notified when new data is received
+	 * 
+	 * @param listener
+	 */
 	public void addAsyncSocketListener(AsyncReadListener listener) {
 		reader.addAsyncReadListener(listener);
 	}
 
+	/**
+	 * Remove a listener
+	 * 
+	 * @param listener
+	 */
 	public void removeAsyncSocketListener(AsyncReadListener listener) {
 		reader.removeAsyncReadListener(listener);
 	}
 
+	/**
+	 * Send some data over the socket NONBLOCKING
+	 * 
+	 * @param data
+	 */
 	public void send(String data) {
 		writer.send(data);
 	}
 
+	/**
+	 * Send some data over the socket, notifying the parent as necessary
+	 * NONBLOCKING
+	 * 
+	 * @param data
+	 * @param parent
+	 */
 	public void send(String data, AsyncWriteSender parent) {
 		writer.send(data, parent);
 	}
 
+	/**
+	 * Send some data over the socket, specified in a prepackaged request.
+	 * 
+	 * @param request
+	 */
 	public void send(AsyncWriteRequest request) {
 		writer.send(request);
 	}
 
+	/**
+	 * Check the status of this socket
+	 * 
+	 * @return
+	 */
 	public boolean isRunning() {
 		return running;
 	}
