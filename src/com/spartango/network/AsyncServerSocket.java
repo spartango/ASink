@@ -31,6 +31,15 @@ public class AsyncServerSocket implements Runnable {
 		accepting = false;
 	}
 
+	/**
+	 * Starts publishing events to listeners
+	 */
+	public void start() {
+		if (!running) {
+			runner.start();
+		}
+	}
+
 	@Override
 	public void run() {
 		running = accepting = true;
