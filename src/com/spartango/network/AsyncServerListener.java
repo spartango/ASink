@@ -5,6 +5,6 @@ public interface AsyncServerListener {
 
 	public void onNewClient(AsyncServerEvent e);
 
-	public void onServerSocketFailure(AsyncServerEvent e);
+	public void onServerFailure(AsyncServerEvent e);
 
 }
