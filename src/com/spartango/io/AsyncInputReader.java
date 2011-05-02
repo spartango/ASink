@@ -47,6 +47,7 @@ public class AsyncInputReader implements Runnable {
 	private synchronized void executeReceive() {
 		try {
 			String data = input.readLine();
+			System.out.println("New data");
 			notifyNewData(data);
 		} catch (IOException e) {
 			notifyReadFailure(e);
@@ -67,7 +68,7 @@ public class AsyncInputReader implements Runnable {
 		AsyncReadEvent event =  new AsyncReadEvent(this,
 				AsyncReadEvent.SUCCESS, data, null);
 		for (AsyncReadListener listener : listeners) {
-			listener.onReceiveFailed(event);
+			listener.onDataReceived(event);
 		}
 	}
 
@@ -113,11 +114,11 @@ public class AsyncInputReader implements Runnable {
 		running = false;
 	}
 
-	public synchronized void addAsyncReadListener(AsyncReadListener listener) {
+	public void addAsyncReadListener(AsyncReadListener listener) {
 		listeners.add(listener);
 	}
 
-	public synchronized void removeAsyncReadListener(AsyncReadListener listener) {
+	public void removeAsyncReadListener(AsyncReadListener listener) {
 		listeners.remove(listener);
 	}
 

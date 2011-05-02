@@ -12,7 +12,7 @@ import java.util.Queue;
  * 
  */
 public class AsyncOutputWriter implements Runnable {
-	private int sleepTime = 5; // ms
+	private int sleepTime = 10; // ms
 
 	private Queue<AsyncWriteRequest> sendQueue;
 	private PrintWriter output;
@@ -45,7 +45,9 @@ public class AsyncOutputWriter implements Runnable {
 		if (!sendQueue.isEmpty()) {
 			AsyncWriteRequest request = sendQueue.remove();
 			try {
+				System.out.println("Writing " + request.getData());
 				output.println(request.getData());
+				output.flush();
 				request.notifySendSuccess();
 			} catch (Exception e) {
 				request.notifySendFailure(e);

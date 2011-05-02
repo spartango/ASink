@@ -43,7 +43,7 @@ public class AsyncServerSocket implements Runnable {
 	@Override
 	public void run() {
 		running = accepting = true;
-
+		System.out.println("Accepting");
 		while (running) {
 			if (accepting) {
 				accept();
@@ -58,6 +58,7 @@ public class AsyncServerSocket implements Runnable {
 	private void accept() {
 		try {
 			Socket client = server.accept();
+			System.out.println("Accepted new client");
 			notifyNewClient(client);
 		} catch (IOException e) {
 			notifyFailure(e);
