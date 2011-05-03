@@ -45,7 +45,6 @@ public class AsyncOutputWriter implements Runnable {
 		if (!sendQueue.isEmpty()) {
 			AsyncWriteRequest request = sendQueue.remove();
 			try {
-				System.out.println("Writing " + request.getData());
 				output.println(request.getData());
 				output.flush();
 				request.notifySendSuccess();
