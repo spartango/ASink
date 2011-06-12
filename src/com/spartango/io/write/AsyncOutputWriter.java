@@ -1,6 +1,7 @@
-package com.spartango.io;
+package com.spartango.io.write;
 
-import java.io.PrintWriter;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -15,7 +16,7 @@ public class AsyncOutputWriter implements Runnable {
 	private int sleepTime = 10; // ms
 
 	private Queue<AsyncWriteRequest> sendQueue;
-	private PrintWriter output;
+	private OutputStream output;
 	private Thread runner;
 
 	private boolean running;
@@ -24,12 +25,12 @@ public class AsyncOutputWriter implements Runnable {
 	 * Creates an asynchronous writer bound to the specified printwriter Note
 	 * that this does not automatically start, and must be explicitly run
 	 * 
-	 * @param printWriter
+	 * @param outputStream
 	 */
-	public AsyncOutputWriter(PrintWriter printWriter) {
+	public AsyncOutputWriter(OutputStream out) {
 		running = false;
 		sendQueue = new LinkedList<AsyncWriteRequest>();
-		output = printWriter;
+		output = out;
 		runner = new Thread(this);
 	}
 
@@ -45,7 +46,7 @@ public class AsyncOutputWriter implements Runnable {
 		if (!sendQueue.isEmpty()) {
 			AsyncWriteRequest request = sendQueue.remove();
 			try {
-				output.println(request.getData());
+				output.write(request.getData());
 				output.flush();
 				request.notifySendSuccess();
 			} catch (Exception e) {
@@ -62,6 +63,15 @@ public class AsyncOutputWriter implements Runnable {
 	public void send(String data) {
 		send(new AsyncWriteRequest(null, data));
 	}
+	
+	/**
+	 * Sends a string to the host, without a parent to be notified. NONBLOCKING
+	 * 
+	 * @param data
+	 */
+	public void send(byte[] data) {
+		send(new AsyncWriteRequest(null, data));
+	}
 
 	/**
 	 * Creates and queues a request to be sent, with notifications sent to the
@@ -71,6 +81,17 @@ public class AsyncOutputWriter implements Runnable {
 	 * @param parent
 	 */
 	public void send(String data, AsyncWriteSender parent) {
+		send(new AsyncWriteRequest(parent, data));
+	}
+
+	/**
+	 * Creates and queues a request to be sent, with notifications sent to the
+	 * parent. NONBLOCKING
+	 * 
+	 * @param data
+	 * @param parent
+	 */
+	public void send(byte[] data, AsyncWriteSender parent) {
 		send(new AsyncWriteRequest(parent, data));
 	}
 
@@ -105,7 +126,11 @@ public class AsyncOutputWriter implements Runnable {
 	}
 
 	private void cleanup() {
-		output.close();
+		try {
+			output.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		if (!sendQueue.isEmpty()) {
 			for (AsyncWriteRequest req : sendQueue) {
 				req.notifySendUnavailable();

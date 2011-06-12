@@ -1,4 +1,6 @@
-package com.spartango.io;
+package com.spartango.io.write;
+
+import com.spartango.io.AsyncIOEvent;
 
 /**
  * 
@@ -8,22 +10,26 @@ package com.spartango.io;
 public class AsyncWriteRequest {
 
 	private final AsyncWriteSender parent;
-	private final String data;
+	private final byte[] data;
 
 	/**
 	 * @param parent
 	 * @param data
 	 */
 	public AsyncWriteRequest(AsyncWriteSender parent, String data) {
-		this.parent = parent;
+		this(parent, data.getBytes());
+	}
+
+	public AsyncWriteRequest(AsyncWriteSender parent, byte[] data) {
 		this.data = data;
+		this.parent = parent;
 	}
 
 	public AsyncWriteSender getParent() {
 		return parent;
 	}
 
-	public String getData() {
+	public byte[] getData() {
 		return data;
 	}
 
@@ -44,7 +50,7 @@ public class AsyncWriteRequest {
 	public void notifySendUnavailable() {
 		if (parent != null) {
 			parent.onWriterClosed(new AsyncWriteEvent(this,
-					AsyncWriteEvent.CLOSED, null));
+					AsyncIOEvent.CLOSURE, null));
 		}
 	}
 

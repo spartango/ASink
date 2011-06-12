@@ -1,4 +1,4 @@
-package com.spartango.io;
+package com.spartango.io.lineread;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,10 +13,10 @@ import java.util.Vector;
  * @author anand
  * 
  */
-public class AsyncInputReader implements Runnable {
+public class AsyncLineReader implements Runnable {
 	private int sleepTime = 0; // ms
 
-	private List<AsyncReadListener> listeners;
+	private List<AsyncLineReadListener> listeners;
 	private BufferedReader input;
 	private Thread runner;
 
@@ -28,9 +28,9 @@ public class AsyncInputReader implements Runnable {
 	 * 
 	 * @param bufferedReader
 	 */
-	public AsyncInputReader(BufferedReader bufferedReader) {
+	public AsyncLineReader(BufferedReader bufferedReader) {
 		running = false;
-		listeners = new Vector<AsyncReadListener>();
+		listeners = new Vector<AsyncLineReadListener>();
 		input = bufferedReader;
 		runner = new Thread(this);
 	}
@@ -56,18 +56,18 @@ public class AsyncInputReader implements Runnable {
 
 	private void notifyReadFailure(Exception e) {
 		// Create an immutable event
-		AsyncReadEvent event = new AsyncReadEvent(this, AsyncReadEvent.FAILURE,
+		AsyncLineReadEvent event = new AsyncLineReadEvent(this, AsyncLineReadEvent.FAILURE,
 				null, e);
-		for (AsyncReadListener listener : listeners) {
+		for (AsyncLineReadListener listener : listeners) {
 			listener.onReceiveFailed(event);
 		}
 	}
 
 	private void notifyNewData(String data) {
 		// Create an immutable event
-		AsyncReadEvent event = new AsyncReadEvent(this, AsyncReadEvent.SUCCESS,
+		AsyncLineReadEvent event = new AsyncLineReadEvent(this, AsyncLineReadEvent.SUCCESS,
 				data, null);
-		for (AsyncReadListener listener : listeners) {
+		for (AsyncLineReadListener listener : listeners) {
 			listener.onDataReceived(event);
 		}
 	}
@@ -104,9 +104,9 @@ public class AsyncInputReader implements Runnable {
 	}
 
 	private void notifyInputClosed() {
-		for (AsyncReadListener listener : listeners) {
-			listener.onReceiveFailed(new AsyncReadEvent(this,
-					AsyncReadEvent.CLOSURE, null, null));
+		for (AsyncLineReadListener listener : listeners) {
+			listener.onReceiveFailed(new AsyncLineReadEvent(this,
+					AsyncLineReadEvent.CLOSURE, null, null));
 		}
 	}
 
@@ -114,11 +114,11 @@ public class AsyncInputReader implements Runnable {
 		running = false;
 	}
 
-	public void addAsyncReadListener(AsyncReadListener listener) {
+	public void addAsyncLineReadListener(AsyncLineReadListener listener) {
 		listeners.add(listener);
 	}
 
-	public void removeAsyncReadListener(AsyncReadListener listener) {
+	public void removeAsyncLineReadListener(AsyncLineReadListener listener) {
 		listeners.remove(listener);
 	}
 

@@ -1,4 +1,4 @@
-package com.spartango.io;
+package com.spartango.io.write;
 
 public interface AsyncWriteSender {
 	public void onWriteSuccess(AsyncWriteEvent e);

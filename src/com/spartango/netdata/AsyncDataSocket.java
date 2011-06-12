@@ -1,14 +1,12 @@
-package com.spartango.network;
+package com.spartango.netdata;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import com.spartango.io.lineread.AsyncLineReadListener;
-import com.spartango.io.lineread.AsyncLineReader;
+import com.spartango.io.dataread.AsyncDataReadListener;
+import com.spartango.io.dataread.AsyncDataReader;
 import com.spartango.io.write.AsyncOutputWriter;
 import com.spartango.io.write.AsyncWriteRequest;
 import com.spartango.io.write.AsyncWriteSender;
@@ -23,9 +21,9 @@ import com.spartango.io.write.AsyncWriteSender;
  * @author anand
  * 
  */
-public class AsyncSocket {
+public class AsyncDataSocket {
 	private Socket socket;
-	private AsyncLineReader reader;
+	private AsyncDataReader reader;
 	private AsyncOutputWriter writer;
 
 	private boolean running;
@@ -41,9 +39,9 @@ public class AsyncSocket {
 	 * @throws UnknownHostException
 	 * @throws IOException
 	 */
-	public AsyncSocket(String host, int port) throws UnknownHostException,
-			IOException {
-		this(new Socket(host, port));
+	public AsyncDataSocket(String host, int port, int dataLength)
+			throws UnknownHostException, IOException {
+		this(new Socket(host, port), dataLength);
 	}
 
 	/**
@@ -53,10 +51,9 @@ public class AsyncSocket {
 	 * @param source
 	 * @throws IOException
 	 */
-	public AsyncSocket(Socket source) throws IOException {
+	public AsyncDataSocket(Socket source, int dataLength) throws IOException {
 		socket = source;
-		reader = new AsyncLineReader(new BufferedReader(new InputStreamReader(
-				socket.getInputStream())));
+		reader = new AsyncDataReader(socket.getInputStream(), dataLength);
 		writer = new AsyncOutputWriter(socket.getOutputStream());
 		running = false;
 
@@ -97,8 +94,8 @@ public class AsyncSocket {
 	 * 
 	 * @param listener
 	 */
-	public void addAsyncSocketListener(AsyncLineReadListener listener) {
-		reader.addAsyncLineReadListener(listener);
+	public void addAsyncSocketListener(AsyncDataReadListener listener) {
+		reader.addAsyncDataReadListener(listener);
 	}
 
 	/**
@@ -106,8 +103,8 @@ public class AsyncSocket {
 	 * 
 	 * @param listener
 	 */
-	public void removeAsyncSocketListener(AsyncLineReadListener listener) {
-		reader.removeAsyncLineReadListener(listener);
+	public void removeAsyncSocketListener(AsyncDataReadListener listener) {
+		reader.removeAsyncDataReadListener(listener);
 	}
 
 	/**
@@ -116,6 +113,15 @@ public class AsyncSocket {
 	 * @param data
 	 */
 	public void send(String data) {
+		writer.send(data);
+	}
+
+	/**
+	 * Send some data over the socket NONBLOCKING
+	 * 
+	 * @param data
+	 */
+	public void send(byte[] data) {
 		writer.send(data);
 	}
 
@@ -129,6 +135,18 @@ public class AsyncSocket {
 	public void send(String data, AsyncWriteSender parent) {
 		writer.send(data, parent);
 	}
+	
+	/**
+	 * Send some data over the socket, notifying the parent as necessary
+	 * NONBLOCKING
+	 * 
+	 * @param data
+	 * @param parent
+	 */
+	public void send(byte[] data, AsyncWriteSender parent) {
+		writer.send(data, parent);
+	}
+
 
 	/**
 	 * Send some data over the socket, specified in a prepackaged request.
