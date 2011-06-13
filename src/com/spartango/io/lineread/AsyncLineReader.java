@@ -2,6 +2,7 @@ package com.spartango.io.lineread;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 import java.util.Vector;
 
@@ -21,6 +22,10 @@ public class AsyncLineReader implements Runnable {
 	private Thread runner;
 
 	private boolean running;
+
+	public AsyncLineReader(Reader reader) {
+		this(new BufferedReader(reader));
+	}
 
 	/**
 	 * Creates an asynchronous reader to provide events to listeners, but does
@@ -56,8 +61,8 @@ public class AsyncLineReader implements Runnable {
 
 	private void notifyReadFailure(Exception e) {
 		// Create an immutable event
-		AsyncLineReadEvent event = new AsyncLineReadEvent(this, AsyncLineReadEvent.FAILURE,
-				null, e);
+		AsyncLineReadEvent event = new AsyncLineReadEvent(this,
+				AsyncLineReadEvent.FAILURE, null, e);
 		for (AsyncLineReadListener listener : listeners) {
 			listener.onReceiveFailed(event);
 		}
@@ -65,8 +70,8 @@ public class AsyncLineReader implements Runnable {
 
 	private void notifyNewData(String data) {
 		// Create an immutable event
-		AsyncLineReadEvent event = new AsyncLineReadEvent(this, AsyncLineReadEvent.SUCCESS,
-				data, null);
+		AsyncLineReadEvent event = new AsyncLineReadEvent(this,
+				AsyncLineReadEvent.SUCCESS, data, null);
 		for (AsyncLineReadListener listener : listeners) {
 			listener.onDataReceived(event);
 		}
